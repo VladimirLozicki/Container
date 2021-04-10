@@ -9,20 +9,26 @@ import java.lang.reflect.InvocationTargetException;
 
 public class InjectorImlTest extends TestCase {
 
+    //todo add tests on exception
     private final Injector injector = new InjectorIml();
 
-    public void testGetProvider() {
-    }
-
-    @Test(expected = TooManyConstructorsException.class)
+    @Test
     public void testBind()
             throws TooManyConstructorsException, ConstructorNotFoundException,
             InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
 
         injector.bind(EventDao.class, EventService.class);
+        assertEquals(injector.getProvider(EventDao.class), injector.getProvider(EventDao.class));
     }
 
-    public void testBindSingleton() {
+    @Test
+    public void testBindSingleton()
+            throws TooManyConstructorsException, ConstructorNotFoundException,
+            InvocationTargetException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException {
+
+        injector.bindSingleton(EventDao.class, EventService.class);
+        assertEquals(injector.getProvider(EventDao.class), injector.getProvider(EventDao.class));
     }
 }

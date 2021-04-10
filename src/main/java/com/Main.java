@@ -13,11 +13,9 @@ public class Main {
             NoSuchMethodException, InstantiationException, IllegalAccessException {
 
         Injector injector = new InjectorIml();
-
         injector.bind(EventDao.class, EventService.class);
-
-        Provider<EventDao> daoProvider = injector.getProvider(EventDao.class);
-        //  System.out.println(daoProvider);
-
+        System.out.println(injector.getProvider(EventDao.class));
+        injector.bind(EventDao.class, EventService.class);
+        System.out.println(injector.getProvider(EventDao.class));
     }
 }

@@ -4,7 +4,7 @@ import com.annotation.Inject;
 
 public class EventService extends EventDao implements Provider<EventDao> {
 
-    private EventDao eventDao;
+    private final EventDao eventDao;
 
     @Inject
     public EventService(EventDao eventDao) {

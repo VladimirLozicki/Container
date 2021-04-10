@@ -5,7 +5,6 @@ import com.exception.ConstructorNotFoundException;
 import com.exception.TooManyConstructorsException;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
@@ -54,8 +53,15 @@ import java.util.stream.Collectors;
  * TooManyConstructorsException.
  * 5. + При отсутствии конструкторов с аннотацией Inject используется конструктор по умолчанию. При
  * отсутствии такового выбрасывается ConstructorNotFoundException.
+ * <p>
+ * <p>
+ * <p>
+ * <p>
+ * <p>
  * 6. Если контейнер использует конструктор с аннотацией Inject и для какого-либо аргумента контейнер
  * не может найти binding, выбрасывается BindingNotFoundException.
+ * <p>
+ * <p>
  * 7. Если мы запрашиваем Provider для какого-либо класса и нет cоответствующего binding, возвращается null.
  * 8. Реализуйте возможность использования Singleton и Prototype бинов.
  * 9. Реализация singleton binding'ов должна быть ленивой (создание объекта при первом обращении).
@@ -89,29 +95,14 @@ import java.util.stream.Collectors;
 public class InjectorIml implements Injector {
 
     private Constructor<?> constructorWithAnnotation;
-
-    private Object classObject;
+    private Provider<Object> objectProvider;
 
     public InjectorIml() {
     }
 
     @Override
     public synchronized <T> Provider<T> getProvider(Class<T> type) {
-
-        Field field = Arrays.stream(
-                classObject
-                        .getClass()
-                        .getDeclaredFields())
-                .filter(s -> s.getType() == type).findFirst().get();
-
-
-        //  return (Provider<T>) field.getAnnotatedType().;
-//        Field field = Arrays.stream(classObject.getClass().getDeclaredFields())
-//                .filter(an -> an.getType() == type)
-//                .findFirst().get();
-//
-//        return new Provider<Object> classObject();
-        return null;
+        return (Provider<T>) objectProvider;
     }
 
     @Override
@@ -120,8 +111,8 @@ public class InjectorIml implements Injector {
             IllegalAccessException, InvocationTargetException, InstantiationException {
 
         checkException(impl);
-
-        classObject = constructorWithAnnotation.newInstance(intf.getDeclaredConstructor().newInstance());
+        objectProvider = (Provider<Object>) constructorWithAnnotation
+                .newInstance(intf.getDeclaredConstructor().newInstance());
     }
 
     @Override
@@ -130,7 +121,7 @@ public class InjectorIml implements Injector {
             InstantiationException {
 
         checkException(impl);
-        classObject = Singleton.getInstance(intf);
+        objectProvider = (Provider<Object>) Singleton.getInstance(intf);
     }
 
     private <T> void checkException(Class<? extends T> impl)
@@ -145,15 +136,19 @@ public class InjectorIml implements Injector {
 
         if (constructorsWithAnnotation.size() > 1) {
             throw new TooManyConstructorsException("More then one constructors");
+
         } else if (constructorsWithAnnotation.isEmpty() &
                 constructorList
                         .stream()
                         .filter(s -> s.getParameterCount() == 0).findFirst()
                         .isEmpty()) {
             throw new ConstructorNotFoundException("default constructor not found");
+
         } else {
             if (constructorsWithAnnotation.stream().findFirst().isPresent()) {
                 constructorWithAnnotation = constructorsWithAnnotation.stream().findFirst().get();
+            } else {
+                throw new ConstructorNotFoundException("Constructor not found");
             }
         }
     }
